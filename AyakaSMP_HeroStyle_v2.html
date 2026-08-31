@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AyakaSMP — Minecraft Network</title>
+
+<style>
+:root{
+    --bg:#090d16;
+    --bg2:#0d1320;
+    --panel:#111a29;
+    --panel2:#151f31;
+    --line:#263247;
+    --text:#f5f7fb;
+    --muted:#8996aa;
+    --accent:#5b8cff;
+    --accent2:#7b61ff;
+    --green:#32d583;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+    color:var(--text);
+    font-family:Arial,"Segoe UI",sans-serif;
+    background:
+      radial-gradient(circle at 50% -10%,rgba(91,140,255,.18),transparent 35%),
+      linear-gradient(180deg,#080c15,#0b111d 50%,#070a11);
+    overflow-x:hidden;
+}
+a{text-decoration:none;color:inherit}
+.container{width:min(1180px,calc(100% - 34px));margin:auto}
+
+/* HEADER kiểu portal server Minecraft: nhiều mục, gọn và rõ */
+.topbar{
+    position:sticky;top:0;z-index:1000;
+    background:rgba(7,10,17,.94);
+    border-bottom:1px solid #202a3b;
+    backdrop-filter:blur(12px);
+}
+.header{
+    height:72px;display:flex;align-items:center;gap:28px;
+}
+.logo-text{
+    font-size:21px;font-weight:900;letter-spacing:1px;
+    display:flex;align-items:center;gap:10px;white-space:nowrap;
+}
+.logo-mark{
+    width:35px;height:35px;border-radius:9px;
+    display:grid;place-items:center;
+    background:linear-gradient(135deg,#5b8cff,#7b61ff);
+    box-shadow:0 7px 22px rgba(91,140,255,.28);
+}
+.main-nav{display:flex;align-items:center;gap:3px;flex:1}
+.main-nav a{
+    padding:25px 13px;color:#aeb9cb;font-size:13px;font-weight:700;
+    border-bottom:2px solid transparent;transition:.2s;
+}
+.main-nav a:hover,.main-nav a.active{color:#fff;border-bottom-color:var(--accent)}
+.header-actions{display:flex;align-items:center;gap:9px}
+.small-btn{
+    padding:10px 14px;border:1px solid #2b3850;border-radius:7px;
+    background:#111827;color:#dbe5f5;font-size:12px;font-weight:800;
+}
+.small-btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.menu-btn{display:none;background:none;border:0;color:white;font-size:26px}
+
+/* HERO */
+.hero{
+    min-height:590px;display:flex;align-items:center;
+    background:
+      linear-gradient(90deg,rgba(6,9,16,.98) 0%,rgba(6,9,16,.76) 48%,rgba(6,9,16,.28) 100%),
+      radial-gradient(circle at 75% 50%,rgba(91,140,255,.2),transparent 38%);
+    border-bottom:1px solid #1b2535;
+}
+.hero-grid{
+    display:grid;grid-template-columns:1.1fr .9fr;gap:50px;align-items:center;
+    padding:80px 0;
+}
+.eyebrow{
+    display:inline-flex;align-items:center;gap:8px;
+    color:#91b5ff;font-size:11px;font-weight:900;letter-spacing:2px;
+    text-transform:uppercase;margin-bottom:17px;
+}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 12px var(--green)}
+.hero h1{
+    font-size:clamp(45px,6vw,76px);line-height:.98;letter-spacing:-2.5px;
+    margin-bottom:22px;
+}
+.hero h1 span{color:#79a5ff}
+.hero-desc{max-width:620px;color:#a7b2c5;font-size:17px;line-height:1.75;margin-bottom:29px}
+.hero-buttons{display:flex;gap:11px;flex-wrap:wrap}
+.hero-btn{
+    padding:14px 20px;border-radius:7px;font-size:13px;font-weight:900;
+    border:1px solid #344258;background:#151e2e;transition:.2s;
+}
+.hero-btn:hover{transform:translateY(-2px);border-color:#5576a8}
+.hero-btn.primary{background:#4d7ff0;border-color:#4d7ff0}
+.hero-art{
+    min-height:350px;position:relative;display:grid;place-items:center;
+}
+.hero-art .ring{
+    width:310px;height:310px;border-radius:50%;
+    border:1px solid rgba(110,153,255,.3);
+    box-shadow:0 0 100px rgba(76,125,255,.12),inset 0 0 70px rgba(76,125,255,.06);
+}
+.hero-logo{
+    position:absolute;width:185px;height:185px;object-fit:contain;
+    border-radius:28px;filter:drop-shadow(0 20px 45px rgba(0,0,0,.45));
+}
+
+/* STATUS STRIP */
+.status-wrap{margin-top:-42px;position:relative;z-index:5}
+.status{
+    display:grid;grid-template-columns:1.25fr 1fr 1fr 1fr;
+    background:#101827;border:1px solid #29364b;border-radius:9px;
+    overflow:hidden;box-shadow:0 18px 50px rgba(0,0,0,.32);
+}
+.status-item{padding:21px 24px;border-right:1px solid #263247}
+.status-item:last-child{border-right:0}
+.status-label{color:#718096;font-size:10px;text-transform:uppercase;letter-spacing:1.3px;font-weight:800;margin-bottom:7px}
+.status-value{font-size:16px;font-weight:900}
+.online{color:#48dc91}
+
+/* SECTION */
+section{padding:88px 0}
+.section-head{display:flex;align-items:end;justify-content:space-between;gap:20px;margin-bottom:28px}
+.section-head h2{font-size:29px;letter-spacing:-.7px}
+.section-head p{color:var(--muted);font-size:13px;max-width:500px;line-height:1.6}
+
+/* SERVER MODES / FEATURES */
+.feature-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:17px}
+.feature{
+    min-height:210px;padding:27px;background:#101827;border:1px solid #253146;
+    border-radius:8px;position:relative;overflow:hidden;transition:.25s;
+}
+.feature:hover{transform:translateY(-5px);border-color:#405578;background:#121c2d}
+.feature-num{font-size:11px;color:#5f7698;font-weight:900;letter-spacing:1px}
+.feature h3{font-size:19px;margin:35px 0 11px}
+.feature p{font-size:13px;color:#94a1b5;line-height:1.7}
+.feature-icon{
+    position:absolute;right:22px;top:20px;font-size:27px;opacity:.75;
+}
+
+/* SERVER INFO */
+.info-layout{display:grid;grid-template-columns:1.15fr .85fr;gap:18px}
+.server-card,.join-card{
+    background:#101827;border:1px solid #27344a;border-radius:8px;padding:30px;
+}
+.server-card h3,.join-card h3{font-size:20px;margin-bottom:22px}
+.ip-box{
+    display:flex;align-items:center;justify-content:space-between;gap:15px;
+    padding:18px;background:#0a101b;border:1px solid #25334a;border-radius:7px;
+    cursor:pointer;margin-bottom:20px;
+}
+.ip-box small{display:block;color:#6f7e94;font-size:10px;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+.ip-box strong{font-size:17px}
+.copy-pill{padding:9px 11px;border-radius:6px;background:#1a2941;color:#8eb2ff;font-size:11px;font-weight:900}
+.data-list{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.data{padding:15px;background:#0c1320;border-radius:6px}
+.data span{display:block;color:#68778d;font-size:10px;text-transform:uppercase;margin-bottom:5px}
+.data b{font-size:13px}
+.join-card{
+    background:
+      linear-gradient(145deg,rgba(71,112,220,.15),rgba(16,24,39,.96));
+}
+.join-card p{color:#96a4b8;font-size:13px;line-height:1.7;margin-bottom:22px}
+.join-list{list-style:none;margin-bottom:25px}
+.join-list li{padding:10px 0;border-bottom:1px solid #253247;color:#cbd5e1;font-size:13px}
+.join-list li:last-child{border:0}
+.join-btn{
+    display:block;text-align:center;padding:13px;background:#4d7ff0;
+    border-radius:6px;font-size:12px;font-weight:900;
+}
+
+/* RULES */
+.rules-shell{background:#0c121e;border-top:1px solid #1e2938;border-bottom:1px solid #1e2938}
+.rules-container{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.rule-box{background:#101827;border:1px solid #27344a;border-radius:8px;padding:25px}
+.rule-box h3{
+    color:#8eb2ff;font-size:17px;padding-bottom:15px;margin-bottom:18px;
+    border-bottom:1px solid #263247
+}
+.rule-list{list-style:none}
+.rule-list li{
+    position:relative;padding-left:17px;margin-bottom:10px;
+    color:#aeb9c9;font-size:13px;line-height:1.55
+}
+.rule-list li::before{
+    content:"";position:absolute;left:0;top:8px;width:5px;height:5px;
+    background:#5b8cff;border-radius:1px
+}
+.rule-highlight{color:#ffd36a!important;font-weight:800}
+.rule-list a{color:#79a5ff}
+
+/* COMMUNITY */
+.community{
+    padding:72px 30px;text-align:center;border-radius:9px;
+    background:
+      linear-gradient(90deg,rgba(26,39,66,.96),rgba(16,24,39,.96));
+    border:1px solid #30405a;
+}
+.community h2{font-size:32px;margin-bottom:11px}
+.community p{color:#8e9db2;font-size:14px;margin-bottom:24px}
+.community .hero-btn{display:inline-block}
+
+/* FOOTER */
+footer{border-top:1px solid #1d2838;color:#68778d;padding:32px 0;font-size:12px}
+.footer-inner{display:flex;justify-content:space-between;gap:20px}
+.footer-links{display:flex;gap:18px}
+.footer-links a:hover{color:#fff}
+
+#toast{
+    visibility:hidden;opacity:0;position:fixed;z-index:2000;bottom:25px;left:50%;
+    transform:translateX(-50%);padding:13px 18px;background:#18a66a;color:#fff;
+    border-radius:6px;font-size:12px;font-weight:900;transition:.25s;
+}
+#toast.show{visibility:visible;opacity:1;bottom:40px}
+
+@media(max-width:850px){
+    .main-nav,.header-actions{display:none}
+    .menu-btn{display:block;margin-left:auto}
+    .header{height:62px}
+    .hero-grid,.info-layout{grid-template-columns:1fr}
+    .hero-art{min-height:270px;order:-1}
+    .hero{min-height:auto}
+    .hero-grid{padding:65px 0}
+    .hero h1{font-size:52px}
+    .status{grid-template-columns:1fr 1fr}
+    .status-item:nth-child(2){border-right:0}
+    .status-item:nth-child(-n+2){border-bottom:1px solid #263247}
+    .feature-grid{grid-template-columns:1fr}
+    .rules-container{grid-template-columns:1fr}
+}
+@media(max-width:560px){
+    .container{width:min(100% - 24px,1180px)}
+    .hero h1{font-size:43px}
+    .hero-desc{font-size:15px}
+    .status{grid-template-columns:1fr}
+    .status-item{border-right:0;border-bottom:1px solid #263247}
+    .status-item:last-child{border-bottom:0}
+    .data-list{grid-template-columns:1fr}
+    .community{padding:45px 18px}
+    .community h2{font-size:27px}
+    .footer-inner{flex-direction:column}
+}
+</style>
+</head>
+
+<body>
+
+<header class="topbar">
+    <div class="container header">
+        <a class="logo-text" href="#home">
+            <span class="logo-mark">🌸</span> AYAKASMP
+        </a>
+        <nav class="main-nav">
+            <a class="active" href="#home">TRANG CHỦ</a>
+            <a href="#server">MÁY CHỦ</a>
+            <a href="#features">TÍNH NĂNG</a>
+            <a href="#rules">LUẬT SERVER</a>
+            <a href="#community">CỘNG ĐỒNG</a>
+        </nav>
+        <div class="header-actions">
+            <a class="small-btn" href="https://discord.gg/3pKwYbJw73" target="_blank">DISCORD</a>
+            <a class="small-btn primary" href="#server">CHƠI NGAY</a>
+        </div>
+        <button class="menu-btn" id="hamburger">☰</button>
+    </div>
+</header>
+
+<main id="home">
+
+<section class="hero">
+    <div class="container hero-grid">
+        <div>
+            <div class="eyebrow"><span class="dot"></span> MINECRAFT SURVIVAL NETWORK</div>
+            <h1>Chào mừng đến<br><span>AyakaSMP</span></h1>
+            <p class="hero-desc">
+                Một thế giới sinh tồn dành cho những người muốn xây dựng, khám phá,
+                giao lưu và tạo nên hành trình Minecraft của riêng mình.
+            </p>
+            <div class="hero-buttons">
+                <a class="hero-btn primary" href="#server">🎮 VÀO MÁY CHỦ</a>
+                <a class="hero-btn" href="https://discord.gg/3pKwYbJw73" target="_blank">💬 THAM GIA DISCORD</a>
+            </div>
+        </div>
+        <div class="hero-art">
+            <div class="ring"></div>
+            <img class="hero-logo" src="https://i.ibb.co/KxCYVHcQ/server-icon.png" alt="AyakaSMP">
+        </div>
+    </div>
+</section>
+
+<div class="container status-wrap">
+    <div class="status">
+        <div class="status-item">
+            <div class="status-label">Trạng thái</div>
+            <div class="status-value online">● ĐANG HOẠT ĐỘNG</div>
+        </div>
+        <div class="status-item">
+            <div class="status-label">Server</div>
+            <div class="status-value">AyakaSMP</div>
+        </div>
+        <div class="status-item">
+            <div class="status-label">Phiên bản</div>
+            <div class="status-value">Java 1.21.x - 26.x</div>
+        </div>
+        <div class="status-item">
+            <div class="status-label">Nền tảng</div>
+            <div class="status-value">Java / Bedrock</div>
+        </div>
+    </div>
+</div>
+
+<section id="features">
+    <div class="container">
+        <div class="section-head">
+            <div><h2>AyakaSMP có gì?</h2></div>
+            <p>Thiết kế theo phong cách cổng thông tin Minecraft: nội dung rõ ràng, nhiều khu vực và tập trung vào việc đưa người chơi vào server nhanh.</p>
+        </div>
+        <div class="feature-grid">
+            <article class="feature">
+                <span class="feature-icon">🌸</span>
+                <span class="feature-num">01 / COMMUNITY</span>
+                <h3>Cộng đồng tích cực</h3>
+                <p>Tham gia Discord để trò chuyện, nhận thông báo, hỗ trợ từ admin và cập nhật thông tin mới nhất.</p>
+            </article>
+            <article class="feature">
+                <span class="feature-icon">⛏️</span>
+                <span class="feature-num">02 / SURVIVAL</span>
+                <h3>Sinh tồn độc đáo</h3>
+                <p>Khám phá thế giới Minecraft nguyên bản cùng các plugin hỗ trợ giúp trải nghiệm thoải mái hơn.</p>
+            </article>
+            <article class="feature">
+                <span class="feature-icon">⚔️</span>
+                <span class="feature-num">03 / EVENTS</span>
+                <h3>Sự kiện hấp dẫn</h3>
+                <p>Các hoạt động, event theo mùa, đánh Boss và tính năng mới được cập nhật thường xuyên.</p>
+            </article>
+        </div>
+    </div>
+</section>
+
+<section id="server">
+    <div class="container">
+        <div class="section-head">
+            <div><h2>Thông tin máy chủ</h2></div>
+            <p>Mọi thông tin cần thiết để người chơi mới có thể vào AyakaSMP ngay.</p>
+        </div>
+        <div class="info-layout">
+            <div class="server-card">
+                <h3>Thông tin kết nối</h3>
+                <div class="ip-box copy-ip" onclick="copyIP()">
+                    <div>
+                        <small>IP SERVER — NHẤN ĐỂ SAO CHÉP</small>
+                        <strong id="serverIP">premium1.gachcloud.net:25696</strong>
+                    </div>
+                    <span class="copy-pill">COPY</span>
+                </div>
+                <div class="data-list">
+                    <div class="data"><span>Tên server</span><b>AyakaSMP</b></div>
+                    <div class="data"><span>Phiên bản</span><b>Java 1.21.x - 26.x</b></div>
+                    <div class="data"><span>Nền tảng</span><b>Minecraft Java / Bedrock</b></div>
+                    <div class="data"><span>Loại máy chủ</span><b>Survival</b></div>
+                </div>
+            </div>
+            <div class="join-card">
+                <h3>Sẵn sàng tham gia?</h3>
+                <p>Copy IP, mở Minecraft và kết nối với AyakaSMP. Nếu cần hỗ trợ, Discord là nơi nhanh nhất để liên hệ cộng đồng.</p>
+                <ul class="join-list">
+                    <li>✓ Hỗ trợ Minecraft Java</li>
+                    <li>✓ Hỗ trợ Bedrock</li>
+                    <li>✓ Cộng đồng Discord</li>
+                </ul>
+                <a class="join-btn" href="https://discord.gg/3pKwYbJw73" target="_blank">MỞ DISCORD</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- LUẬT SERVER MỚI -->
+    <section id="rules">
+        <h2 class="section-title">📜 Bộ Luật Chính Thức</h2>
+        <p class="section-subtitle">
+            Vui lòng đọc kỹ nội quy của AyakaSMP. Vi phạm có thể dẫn đến việc bị cấm khỏi máy chủ.
+        </p>
+
+        <div class="rules-container">
+            
+            <!-- Cột 1: Luật Máy Chủ -->
+            <div class="rule-box">
+                <h3>⚙️ Luật Máy Chủ</h3>
+                <ul class="rule-list">
+                    <li>Không Sử dụng Client Hack / Menu Hack</li>
+                    <li>Không Dùng Mod Gian Lận Di Chuyển (Speed, Fly, Fly-hack,...)</li>
+                    <li>Không Dùng Mod Can Thiệp Túi Đồ (Inventory Mods)</li>
+                    <li>Không Dùng Mod Hiển Thị Máu (Health Indicators)</li>
+                    <li>Không Dùng Radar (Bản đồ soi vị trí người chơi/mob)</li>
+                    <li>Không Dùng Freecam (Mod soi góc nhìn tự do)</li>
+                    <li>Không Dùng Auto Place (Tự động đặt block)</li>
+                    <li>Không Dùng Easy Place (Litematica Easy Place/Đặt nhanh)</li>
+                    <li>Không Sử dụng Macro hoặc Script</li>
+                    <li>Không Lạm dụng Lỗi (Bug/Glitch)</li>
+                    <li>Không Sử dụng Phương pháp Dupe (Nhân bản đồ)</li>
+                    <li>Không Giao dịch Tiền thật (IRL Trading / RMT)</li>
+                    <li>Không Thưởng Mời Người Chơi (Invite Rewards)</li>
+                    <li>Không Giao dịch Liên Server (Cross Server Trading)</li>
+                    <li>Không Tìm hoặc Sử dụng Seed của Map</li>
+                    <li>Không Sử dụng Tối đa Quá 5 Tài khoản (Max 5 Alts)</li>
+                    <li>Không Dùng Mod Chuột / Scrollers (Mouse Tweaks/Tùy chỉnh chuột)</li>
+                    <li>Không Thưởng Discord Nitro Boost</li>
+                    <li>Không Chỉnh sửa / Gian lận Công thức Chế tạo (Crafting Mods)</li>
+                    <li>Không Giả mạo Staff / Ban Quản Trị</li>
+                    <li>Không Cờ bạc Tự phát Nguồn ngoài (External Gambling)</li>
+                </ul>
+            </div>
+
+            <!-- Cột 2: Luật Chat -->
+            <div class="rule-box">
+                <h3>💬 Luật Trò Chuyện (Chat)</h3>
+                <ul class="rule-list">
+                    <li>Không Spam hoặc xúi giục người khác Spam</li>
+                    <li>Không Quấy rối người khác</li>
+                    <li>Không Quảng cáo hoặc Quảng bá</li>
+                    <li>Không Phân biệt đối xử hoặc Phát ngôn thù hận</li>
+                    <li>Không Đe dọa tính mạng / Dọa giết</li>
+                    <li>Không Chia sẻ thông tin cá nhân của người khác</li>
+                    <li>Không Giả mạo người khác</li>
+                    <li>Không Trốn phạt / Lách Ban</li>
+                    <li>Không Dối trá / Lừa đảo Staff</li>
+                    <li class="rule-highlight">
+                        Báo cáo mọi Lỗi (Bug), Glitch và Hack/Cheater tại Discord: 
+                        <a href="https://discord.gg/3pKwYbJw73" target="_blank">discord.gg/3pKwYbJw73</a>
+                    </li>
+                </ul>
+            </div>
+
+        </div>
+    </section>
+
+
+    <!-- CỘNG ĐỒNG -->
+
+<section id="community">
+    <div class="container">
+        <div class="community">
+            <h2>Tham gia cộng đồng AyakaSMP</h2>
+            <p>Nhận thông báo, hỗ trợ và giao lưu cùng những người chơi khác.</p>
+            <a class="hero-btn primary" href="https://discord.gg/3pKwYbJw73" target="_blank">💬 THAM GIA DISCORD NGAY</a>
+        </div>
+    </div>
+</section>
+
+</main>
+
+<footer>
+    <div class="container footer-inner">
+        <div>© 2026 AyakaSMP · Minecraft Survival Server</div>
+        <div class="footer-links">
+            <a href="#home">Trang chủ</a>
+            <a href="#server">Máy chủ</a>
+            <a href="#rules">Luật</a>
+            <a href="#community">Discord</a>
+        </div>
+    </div>
+</footer>
+
+<div id="toast">Đã chép IP: premium1.gachcloud.net:25696</div>
+
+<!-- TÍCH HỢP JAVASCRIPT -->
+    <script>
+        // Toggle Mobile Menu
+        const hamburger = document.getElementById('hamburger');
+        const navMenu = document.getElementById('nav-menu');
+
+        hamburger.addEventListener('click', () => {
+            navMenu.classList.toggle('active');
+        });
+
+        // Tự động đóng menu khi click (Mobile)
+        const navLinks = document.querySelectorAll('.menu a');
+        navLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                navMenu.classList.remove('active');
+            });
+        });
+
+        // Copy IP
+        function copyIP() {
+            const ipText = document.getElementById("serverIP").innerText;
+            navigator.clipboard.writeText(ipText).then(() => {
+                const toast = document.getElementById("toast");
+                toast.className = "show";
+                setTimeout(() => {
+                    toast.className = toast.className.replace("show", "");
+                }, 3000);
+            }).catch(err => console.error('Lỗi khi sao chép: ', err));
+        }
+    </script>
+<script>
+const mobileButton=document.getElementById("hamburger");
+const nav=document.querySelector(".main-nav");
+if(mobileButton){
+    mobileButton.addEventListener("click",()=>{
+        nav.style.display = nav.style.display==="flex" ? "none" : "flex";
+        nav.style.position="absolute";
+        nav.style.top="62px";
+        nav.style.left="0";
+        nav.style.right="0";
+        nav.style.background="#0b111d";
+        nav.style.padding="10px 18px";
+        nav.style.flexDirection="column";
+        nav.style.borderBottom="1px solid #263247";
+    });
+}
+</script>
+</body>
+</html>
